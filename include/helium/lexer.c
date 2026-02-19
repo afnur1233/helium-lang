@@ -14,10 +14,8 @@ enum : i32 {
 	helium_token_type_str_unfinished,
 	helium_token_type_str_multiline,
 	helium_token_type_ident,
-	helium_token_type_num_decimal,
-	helium_token_type_num_float,
-	helium_token_type_num_decimal_malformed,
-	helium_token_type_num_float_malformed,
+	helium_token_type_num,
+	helium_token_type_num_malformed,
 	helium_token_type_paren_round_open,
 	helium_token_type_paren_round_close,
 	helium_token_type_paren_block_open,
@@ -85,8 +83,15 @@ enum : i32 {
 	helium_token_type_keyword_pub,
 };
 
+enum : i32 {
+	helium_token_error_num_extra_dot       = (1),
+	helium_token_error_num_extra_exponential = (1 << 1),
+	helium_token_error_num_invalid_chars   = (1 << 2),
+};
+
 typedef struct Helium_Token {
 	i32 type;
+	i32 error;
 	StrSlice slice;
 	Helium_Loc loc;
 } Helium_Token;
@@ -146,10 +151,8 @@ const char *helium_str_token_type(i32 type) {
 		case helium_token_type_str_unfinished: return "str(unfinished)";
 		case helium_token_type_str_multiline: return "str(multiline)";
 		case helium_token_type_ident: return "ident";
-		case helium_token_type_num_decimal: return "num_decimal";
-		case helium_token_type_num_float: return "num_float";
-		case helium_token_type_num_decimal_malformed: return "num_decimal(malformed)";
-		case helium_token_type_num_float_malformed: return "num_float(malformed)";
+		case helium_token_type_num: return "num";
+		case helium_token_type_num_malformed: return "num(malformed)";
 		case helium_token_type_paren_round_open: return "paren_round_open";
 		case helium_token_type_paren_round_close: return "paren_round_close";
 		case helium_token_type_paren_block_open: return "paren_block_open";
@@ -387,21 +390,52 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				};
 			}
 			
-			i32 type =
-			(ch == '.')
-			? (helium_token_type_num_float)
-			: (helium_token_type_num_decimal);
+			bool has_dot = prev == '.';
+			bool has_exponential = prev == '.';
 			u64 len = 1;
+			i32 error = 0;
+			prev = ch;
 			ch = str_slice_at(&lexer->input, lexer->pos);
 			
-			while (isdigit(ch) || ch == '_') {
-				helium_lexer_eat(lexer);
+			while (isalnum(ch) || ch == '.' || ch == '_' || ch == 'e' || ch == 'E') {
+				bool is_valid = false;
+				if (ch == '.') {
+					is_valid = true;
+					if (has_dot) {
+						error |= helium_token_error_num_extra_dot;
+					}
+					has_dot = true;
+				} else if (isdigit(ch) || ch == '_') {
+					is_valid = true;
+				}
+				
+				prev = helium_lexer_eat(lexer);
 				ch = str_slice_at(&lexer->input, lexer->pos);
 				len++;
+				
+				if (prev == 'e' || prev == 'E') {
+					is_valid = true;
+					if ((ch == '+' || ch == '-')) {
+						prev = helium_lexer_eat(lexer);
+						ch = str_slice_at(&lexer->input, lexer->pos);
+						len++;
+					}
+					if (has_exponential) {
+						error |= helium_token_error_num_extra_exponential;
+					}
+					has_exponential = true;
+				}
+				
+				if (!is_valid) {
+					error |= helium_token_error_num_invalid_chars;
+				}
 			}
 			
 			return (Helium_Token){
-				.type = type,
+				.type = (error == 0)
+					? helium_token_type_num
+					: helium_token_type_num_malformed,
+				.error = error,
 				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
 				.loc = MAKE_LOC(len),
 			};
