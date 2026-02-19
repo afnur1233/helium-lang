@@ -2,7 +2,8 @@
 1
 
 
-// documentation
+/// documentation
+// comment
 const std = import("std")
 
 const main = func() void {
