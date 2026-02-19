@@ -1,0 +1,37 @@
+#!/usr/bin/env helc
+1
+
+const std = import("std")
+
+const main = func() void {
+	const x = +(1 *(2, 7) 1 4 63 6)
+	
+	//(+ 1 4)
+	+(1, 4)
+	// Not like '+(1 4)' because of led tokens like '[':
+	// +(1 []5)
+	// Is '1' indexed or is 5 an array?
+	
+	+(x y)
+	+(x)
+	-(y)
+	
+	and(true, or(false, true, false))
+}
+
+const component = union(i32) {
+	pub transform: struct {
+		pub x: f64
+		pub y: f64
+		pub z: f64
+	},
+	pub orientation: struct {
+		pub x: f64
+		pub y: f64
+		pub z: f64
+		pub w: f64
+	},
+	pub mesh_3d: struct {
+		pub data: ArrayList(Tri)
+	}
+}
