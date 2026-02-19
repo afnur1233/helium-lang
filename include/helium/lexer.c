@@ -308,7 +308,7 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 			helium_lexer_eat(lexer);
 			ch = str_slice_at(&lexer->input, lexer->pos);
 			
-			while (ch != '\n') {
+			while (ch != '\n' && ch != '\0') {
 				helium_lexer_eat(lexer);
 				ch = str_slice_at(&lexer->input, lexer->pos);
 				len++;
@@ -399,13 +399,34 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				ch = str_slice_at(&lexer->input, lexer->pos);
 				len++;
 			}
-				
+			
 			return (Helium_Token){
 				.type = type,
 				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
 				.loc = MAKE_LOC(len),
 			};
 		}
+		
+		case '#': {
+			ch = str_slice_at(&lexer->input, lexer->pos);
+			if (ch != '!') {
+				break;
+			}
+			u64 len = 1;
+			
+			while (ch != '\0' && ch != '\n') {
+				helium_lexer_eat(lexer);
+				ch = str_slice_at(&lexer->input, lexer->pos);
+				len++;
+			}
+				
+			return (Helium_Token){
+				.type = helium_token_type_shebang,
+				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+				.loc = MAKE_LOC(len),
+			};
+		}
+		
 		
 		case '(': return (Helium_Token){
 			.type = helium_token_type_paren_round_open,
@@ -505,6 +526,31 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 					.type = helium_token_type_slash_equals,
 					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
+				};
+			} else if (ch == '/') {
+				u64 len = 1;
+				u64 slash_count = 1;
+				while (ch == '/') {
+					helium_lexer_eat(lexer);
+					ch = str_slice_at(&lexer->input, lexer->pos);
+					len++;
+					slash_count++;
+				}
+				
+				i32 type = (slash_count == 3)
+					? helium_token_type_doc
+					: helium_token_type_comment;
+				
+				while (ch != '\n' && ch != '\0') {
+					helium_lexer_eat(lexer);
+					ch = str_slice_at(&lexer->input, lexer->pos);
+					len++;
+				}
+				
+				return (Helium_Token){
+					.type = type,
+					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+					.loc = MAKE_LOC(len),
 				};
 			}
 			

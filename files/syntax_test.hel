@@ -1,6 +1,8 @@
 #!/usr/bin/env helc
 1
 
+
+// documentation
 const std = import("std")
 
 const main = func() void {
