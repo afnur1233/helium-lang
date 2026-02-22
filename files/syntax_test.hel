@@ -1,7 +1,8 @@
 16
 /// documentation
 // comment
-const std = import("std")
+const thrd = import("thread")
+const coroutine = import("coroutine")
 
 const main = func() void {
 	const x = -(+(1, *(2, 7)))
