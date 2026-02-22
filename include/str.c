@@ -1,5 +1,6 @@
 #pragma once
 #include <stdlib.h>
+#include <stdio.h>
 #include "int.c"
 
 typedef struct Str {
@@ -25,7 +26,7 @@ typedef int StrResult;
 
 #define str_slice_from_lit(...)_str_slice_from_lit_par((__VA_ARGS__))
 #define _str_slice_from_lit_par(par)_str_slice_from_lit par
-#define _str_slice_from_lit(...)((StrSlice){ .buf = #__VA_ARGS__, .len = sizeof(StrSlice) - 1 })
+#define _str_slice_from_lit(...)((StrSlice){ .buf = (__VA_ARGS__), .len = sizeof(__VA_ARGS__) - 1 })
 
 StrResult str_alloc(Str *str, u64 len) {
 	u64 free_space = str->cap - str->len;

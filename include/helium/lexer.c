@@ -10,6 +10,8 @@ enum : i32 {
 	helium_token_type_comment,
 	helium_token_type_doc,
 	helium_token_type_unkown,
+	helium_token_type_ch,
+	helium_token_type_ch_malformed,
 	helium_token_type_str,
 	helium_token_type_str_unfinished,
 	helium_token_type_str_multiline,
@@ -84,9 +86,11 @@ enum : i32 {
 };
 
 enum : i32 {
-	helium_token_error_num_extra_dot       = (1),
+	helium_token_error_num_extra_dot         = (1),
 	helium_token_error_num_extra_exponential = (1 << 1),
-	helium_token_error_num_invalid_chars   = (1 << 2),
+	helium_token_error_num_invalid_chars     = (1 << 2),
+	helium_token_error_ch_unfinished         = (1 << 3),
+	helium_token_error_ch_too_long           = (1 << 3),
 };
 
 typedef struct Helium_Token {
@@ -147,6 +151,8 @@ const char *helium_str_token_type(i32 type) {
 		case helium_token_type_comment: return "comment";
 		case helium_token_type_doc: return "doc";
 		case helium_token_type_unkown: return "unkown";
+		case helium_token_type_ch: return "ch";
+		case helium_token_type_ch_malformed: return "ch(malformed)";
 		case helium_token_type_str: return "str";
 		case helium_token_type_str_unfinished: return "str(unfinished)";
 		case helium_token_type_str_multiline: return "str(multiline)";
@@ -231,6 +237,7 @@ u8 helium_lexer_eat(Helium_Lexer *lexer) {
 	lexer->pos++;
 	lexer->column++;
 	if (ch == '\n') {
+		lexer->column = 0;
 		lexer->line_num++;
 		lexer->line_begin = lexer->pos;
 	}
@@ -275,6 +282,39 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 	u8 ch = helium_lexer_eat(lexer);
 	
 	switch (ch) {
+		case '\'': {
+			u64 len = 1;
+			u8 prev = ch;
+			ch = str_slice_at(&lexer->input, lexer->pos);
+			while (ch != '\n' && ch != '\0' && !(prev != '\\' && ch == '\'')) {
+				helium_lexer_eat(lexer);
+				ch = str_slice_at(&lexer->input, lexer->pos);
+				len++;
+			}
+			
+			i32 error = 0;
+			if (len > 2) {
+				error |= helium_token_error_ch_too_long;
+			}
+			
+			if (ch == '\'') {
+				helium_lexer_eat(lexer);
+				len++;
+				return (Helium_Token){
+					.type = (error == 0) ? helium_token_type_ch : helium_token_type_ch_malformed,
+					.error = error,
+					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+					.loc = MAKE_LOC(len),
+				};
+			}
+			return (Helium_Token){
+				.type = helium_token_type_ch_malformed,
+				.error = error | helium_token_error_ch_unfinished,
+				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+				.loc = MAKE_LOC(len),
+			};
+		}
+		
 		case '"': {
 			u64 len = 1;
 			u8 prev = ch;

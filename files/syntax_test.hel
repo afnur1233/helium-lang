@@ -1,29 +1,32 @@
-#!/usr/bin/env heliumc
-1
-2_000_000
-1e-5
-1__5.06_04e-6
-1end
-
-
+16
 /// documentation
 // comment
 const std = import("std")
 
 const main = func() void {
-	const x = +(1 *(2, 7) 1 4 63 6)
+	const x = -(+(1, *(2, 7)))
+	const y = 6
+	const z = 15
+	const array = [6]i32 {1,2,3,4,5,6}
 	
-	//(+ 1 4)
-	+(1, 4)
-	// Not like '+(1 4)' because of led tokens like '[':
+	==(x, 15)
+	==(>(+x, 0), true)
+	==(<(-y, 0), true)
+	==(<(-+y, 0))
+	
+	// Not like '+(1 4)' because of left definition tokens like '[':
 	// +(1 []5)
 	// Is '1' indexed or is 5 an array?
+	+(1, 4)
 	
-	+(x y)
-	+(x)
-	-(y)
+	==(<<(1, 1), 2)
+	==(<<(1, 2), 4)
 	
-	and(true, or(false, true, false))
+	// Anything non-zero is true
+	==(and(1, 5), true)
+	==(bool, u8)
+	==(signed(bool), i8)
+	==(and(true, or(false, true, false)), true)
 }
 
 const component = union(i32) {
