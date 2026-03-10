@@ -1,11 +1,8 @@
-16
-/// documentation
-// comment
-const thrd = import("thread")
+const thread = import("thread")
 const coroutine = import("coroutine")
 
 const main = func() void {
-	const x = -(+(1, *(2, 7)))
+	const x = +(1, *(2, 7))
 	const y = 6
 	const z = 15
 	const array = [6]i32 {1,2,3,4,5,6}

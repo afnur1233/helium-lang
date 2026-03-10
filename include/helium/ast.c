@@ -58,14 +58,14 @@ typedef struct Helium_Ast_NodeExprIdent Helium_Ast_NodeExprIdent;
 struct Helium_Ast_NodeExprIdent {
 	i32 type;
 	Helium_Loc loc;
-	StrSlice value;
+	struct str_slice value;
 };
 
 typedef struct Helium_Ast_NodeExprStr Helium_Ast_NodeExprStr;
 struct Helium_Ast_NodeExprStr {
 	i32 type;
 	Helium_Loc loc;
-	Str value;
+	struct str value;
 };
 
 typedef struct Helium_Ast_NodeExprBool Helium_Ast_NodeExprBool;

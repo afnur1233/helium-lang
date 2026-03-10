@@ -3,16 +3,16 @@
 #include <stdio.h>
 #include "int.c"
 
-typedef struct Str {
+struct str {
 	u8 *buf;
 	u64 len;
 	u64 cap;
-} Str;
+};
 
-typedef struct StrSlice {
+struct str_slice {
 	u8 *buf;
 	u64 len;
-} StrSlice;
+};
 
 enum: i32 {
 	str_result_ok,
@@ -26,9 +26,9 @@ typedef int StrResult;
 
 #define str_slice_from_lit(...)_str_slice_from_lit_par((__VA_ARGS__))
 #define _str_slice_from_lit_par(par)_str_slice_from_lit par
-#define _str_slice_from_lit(...)((StrSlice){ .buf = (__VA_ARGS__), .len = sizeof(__VA_ARGS__) - 1 })
+#define _str_slice_from_lit(...)((struct str_slice){ .buf = (__VA_ARGS__), .len = sizeof(__VA_ARGS__) - 1 })
 
-StrResult str_alloc(Str *str, u64 len) {
+StrResult str_alloc(struct str *str, u64 len) {
 	u64 free_space = str->cap - str->len;
 	if (free_space >= len) {
 		return str_result_ok;
@@ -47,7 +47,7 @@ StrResult str_alloc(Str *str, u64 len) {
 	return str_result_ok;
 }
 
-StrResult str_append(Str *str, u8 *buf, u64 len) {
+StrResult str_append(struct str *str, u8 *buf, u64 len) {
 	StrResult res = str_alloc(str, len);
 	if (res != str_result_ok) {
 		return res;
@@ -60,7 +60,7 @@ StrResult str_append(Str *str, u8 *buf, u64 len) {
 	return str_result_ok;
 }
 
-void str_free(Str *str) {
+void str_free(struct str *str) {
 	if (str->buf != NULL) {
 		free(str->buf);
 		str->buf = NULL;
@@ -69,7 +69,7 @@ void str_free(Str *str) {
 	}
 }
 
-StrResult str_read_entire_file(Str *str, FILE *stream) {
+StrResult str_read_entire_file(struct str *str, FILE *stream) {
 	fpos_t original;
 	if (fgetpos(stream, &original) != 0) {
 		return str_result_fgetpos;
@@ -109,33 +109,33 @@ StrResult str_read_entire_file(Str *str, FILE *stream) {
 	return str_result_ok;
 }
 
-inline __attribute__((always_inline)) StrSlice str_slice(const Str *str, u64 start, u64 len) {
+inline __attribute__((always_inline)) struct str_slice str_slice(const struct str *str, u64 start, u64 len) {
 	if (start >= str->len) {
-		return (StrSlice){ .buf = str->buf + str->len, .len = 0 };
+		return (struct str_slice){ .buf = str->buf + str->len, .len = 0 };
 	}
 	u64 end = start + len;
 	if (end >= str->len) {
 		end = str->len;
 	}
 	
-	return (StrSlice){ .buf = str->buf + start, .len = end - start, };
+	return (struct str_slice){ .buf = str->buf + start, .len = end - start, };
 }
 
-inline __attribute__((always_inline)) StrSlice str_slice_slice(const StrSlice *str, u64 start, u64 len) {
+inline __attribute__((always_inline)) struct str_slice str_slice_slice(const struct str_slice *str, u64 start, u64 len) {
 	if (start >= str->len) {
-		return (StrSlice){ .buf = str->buf + str->len, .len = 0 };
+		return (struct str_slice){ .buf = str->buf + str->len, .len = 0 };
 	}
 	u64 end = start + len;
 	if (end >= str->len) {
 		end = str->len;
 	}
 	
-	return (StrSlice){ .buf = str->buf + start, .len = end - start, };
+	return (struct str_slice){ .buf = str->buf + start, .len = end - start, };
 }
 
-inline __attribute__((always_inline)) StrSlice str_slice_until_delim(const Str *str, u64 offset, u8 delim) {
+inline __attribute__((always_inline)) struct str_slice str_slice_until_delim(const struct str *str, u64 offset, u8 delim) {
 	if (offset >= str->len) {
-		return (StrSlice){ .buf = str->buf + str->len, .len = 0 };
+		return (struct str_slice){ .buf = str->buf + str->len, .len = 0 };
 	}
 	
 	u64 len = 0;
@@ -143,12 +143,12 @@ inline __attribute__((always_inline)) StrSlice str_slice_until_delim(const Str *
 		len++;
 	}
 	
-	return (StrSlice){ .buf = str->buf + offset, .len = len };
+	return (struct str_slice){ .buf = str->buf + offset, .len = len };
 }
 
-inline __attribute__((always_inline)) StrSlice str_slice_slice_until_delim(const StrSlice *str, u64 offset, u8 delim) {
+inline __attribute__((always_inline)) struct str_slice str_slice_slice_until_delim(const struct str_slice *str, u64 offset, u8 delim) {
 	if (offset >= str->len) {
-		return (StrSlice){ .buf = str->buf + str->len, .len = 0 };
+		return (struct str_slice){ .buf = str->buf + str->len, .len = 0 };
 	}
 	
 	u64 len = 0;
@@ -156,10 +156,10 @@ inline __attribute__((always_inline)) StrSlice str_slice_slice_until_delim(const
 		len++;
 	}
 	
-	return (StrSlice){ .buf = str->buf + offset, .len = len };
+	return (struct str_slice){ .buf = str->buf + offset, .len = len };
 }
 
-inline __attribute__((always_inline)) u8 str_at(const Str *str, u64 i) {
+inline __attribute__((always_inline)) u8 str_at(const struct str *str, u64 i) {
 	if (i >= str->len) {
 		return '\0';
 	}
@@ -167,7 +167,7 @@ inline __attribute__((always_inline)) u8 str_at(const Str *str, u64 i) {
 	return str->buf[i];
 }
 
-inline __attribute__((always_inline)) void str_set(Str *str, u64 i, u8 ch) {
+inline __attribute__((always_inline)) void str_set(struct str *str, u64 i, u8 ch) {
 	if (i >= str->len) {
 		return;
 	}
@@ -175,7 +175,7 @@ inline __attribute__((always_inline)) void str_set(Str *str, u64 i, u8 ch) {
 	str->buf[i] = ch;
 }
 
-inline __attribute__((always_inline)) u8 str_slice_at(const StrSlice *slice, u64 i) {
+inline __attribute__((always_inline)) u8 str_slice_at(const struct str_slice *slice, u64 i) {
 	if (i >= slice->len) {
 		return '\0';
 	}
@@ -183,7 +183,7 @@ inline __attribute__((always_inline)) u8 str_slice_at(const StrSlice *slice, u64
 	return slice->buf[i];
 }
 
-inline __attribute__((always_inline)) void str_slice_set(StrSlice *slice, u64 i, u8 ch) {
+inline __attribute__((always_inline)) void str_slice_set(struct str_slice *slice, u64 i, u8 ch) {
 	if (i >= slice->len) {
 		return;
 	}
@@ -191,7 +191,7 @@ inline __attribute__((always_inline)) void str_slice_set(StrSlice *slice, u64 i,
 	slice->buf[i] = ch;
 }
 
-inline __attribute__((always_inline)) bool str_eq(const Str *a, const Str *b) {
+inline __attribute__((always_inline)) bool str_eq(const struct str *a, const struct str *b) {
 	if (a->len != b->len) {
 		return false;
 	}
@@ -205,7 +205,7 @@ inline __attribute__((always_inline)) bool str_eq(const Str *a, const Str *b) {
 	return true;
 }
 
-inline __attribute__((always_inline)) bool str_slice_eq(const StrSlice *a, const StrSlice *b) {
+inline __attribute__((always_inline)) bool str_slice_eq(const struct str_slice *a, const struct str_slice *b) {
 	if (a->len != b->len) {
 		return false;
 	}

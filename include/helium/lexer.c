@@ -96,13 +96,13 @@ enum : i32 {
 typedef struct Helium_Token {
 	i32 type;
 	i32 error;
-	StrSlice slice;
+	struct str_slice slice;
 	Helium_Loc loc;
 } Helium_Token;
 
 typedef struct Helium_Lexer {
-	StrSlice input;
-	StrSlice file_path;
+	struct str_slice input;
+	struct str_slice file_path;
 	u64 line_num;
 	u64 line_begin;
 	u64 column;
@@ -110,12 +110,12 @@ typedef struct Helium_Lexer {
 } Helium_Lexer;
 
 typedef struct Helium_Keyword {
-	StrSlice val;
+	struct str_slice val;
 	i32 type;
 } Helium_Keyword;
 
 #define X(str, T)((Helium_Keyword){\
-	.val = (StrSlice){ .buf = str, .len = sizeof(str) - 1  },\
+	.val = (struct str_slice){ .buf = str, .len = sizeof(str) - 1  },\
 	.type = T,\
 })
 const Helium_Keyword helium_keywords[] = {
@@ -245,14 +245,14 @@ u8 helium_lexer_eat(Helium_Lexer *lexer) {
 	return ch;
 }
 
-StrSlice helium_lexer_eat_whitespace(Helium_Lexer *lexer) {
+struct str_slice helium_lexer_eat_whitespace(Helium_Lexer *lexer) {
 	u64 begin = lexer->pos;
 	u64 len = 0;
 	while (isspace(str_slice_at(&lexer->input, lexer->pos))) {
 		helium_lexer_eat(lexer);
 		len++;
 	}
-	return (StrSlice){ .buf = lexer->input.buf + begin, .len = len };
+	return (struct str_slice){ .buf = lexer->input.buf + begin, .len = len };
 }
 
 Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
@@ -262,7 +262,7 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 	u64 line_begin = lexer->line_begin;
 	u64 column = lexer->column;
 	u64 begin = lexer->pos;
-	StrSlice file_path = lexer->file_path;
+	struct str_slice file_path = lexer->file_path;
 	#define MAKE_LOC(_len)((Helium_Loc){\
 		.line_num = line_num,\
 		.line_begin = line_begin,\
@@ -275,7 +275,7 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 	if (lexer->pos >= lexer->input.len) {
 		return (Helium_Token){
 			.type = helium_token_type_end,
-			.slice = (StrSlice){ .buf = lexer->input.buf + lexer->input.len, .len = 0 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + lexer->input.len, .len = 0 },
 			.loc = MAKE_LOC(0),
 		};
 	}
@@ -303,14 +303,14 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				return (Helium_Token){
 					.type = (error == 0) ? helium_token_type_ch : helium_token_type_ch_malformed,
 					.error = error,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = len },
 					.loc = MAKE_LOC(len),
 				};
 			}
 			return (Helium_Token){
 				.type = helium_token_type_ch_malformed,
 				.error = error | helium_token_error_ch_unfinished,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = len },
 				.loc = MAKE_LOC(len),
 			};
 		}
@@ -330,13 +330,13 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				len++;
 				return (Helium_Token){
 					.type = helium_token_type_str,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = len },
 					.loc = MAKE_LOC(len),
 				};
 			}
 			return (Helium_Token){
 				.type = helium_token_type_str_unfinished,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = len },
 				.loc = MAKE_LOC(len),
 			};
 		}
@@ -359,7 +359,7 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 			
 			return (Helium_Token){
 				.type = helium_token_type_str_multiline,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = len },
 				.loc = MAKE_LOC(len),
 			};
 		}
@@ -376,7 +376,7 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 			}
 			
 			i32 type = helium_token_type_ident;
-			StrSlice slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len };
+			struct str_slice slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = len };
 			for (u64 i = 0; i < sizeof(helium_keywords)/sizeof(helium_keywords[0]); i++) {
 				if (str_slice_eq(&slice, &helium_keywords[i].val)) {
 					type = helium_keywords[i].type;
@@ -404,28 +404,28 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 						helium_lexer_eat(lexer);
 						return (Helium_Token){
 							.type = helium_token_type_dot_dot_dot,
-							.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 3 },
+							.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 3 },
 							.loc = MAKE_LOC(3),
 						};
 					} else if (ch == '=') {
 						helium_lexer_eat(lexer);
 						return (Helium_Token){
 							.type = helium_token_type_dot_dot_equals,
-							.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 3 },
+							.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 3 },
 							.loc = MAKE_LOC(3),
 						};
 					}
 					
 					return (Helium_Token){
 						.type = helium_token_type_dot_dot,
-						.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+						.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 						.loc = MAKE_LOC(2),
 					};
 				}
 				
 				return (Helium_Token){
 					.type = helium_token_type_dot,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 					.loc = MAKE_LOC(1),
 				};
 			}
@@ -476,7 +476,7 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 					? helium_token_type_num
 					: helium_token_type_num_malformed,
 				.error = error,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = len },
 				.loc = MAKE_LOC(len),
 			};
 		}
@@ -496,7 +496,7 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				
 			return (Helium_Token){
 				.type = helium_token_type_shebang,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = len },
 				.loc = MAKE_LOC(len),
 			};
 		}
@@ -504,37 +504,37 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 		
 		case '(': return (Helium_Token){
 			.type = helium_token_type_paren_round_open,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 		
 		case ')': return (Helium_Token){
 			.type = helium_token_type_paren_round_close,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 		
 		case '[': return (Helium_Token){
 			.type = helium_token_type_paren_block_open,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 		
 		case ']': return (Helium_Token){
 			.type = helium_token_type_paren_block_close,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 		
 		case '{': return (Helium_Token){
 			.type = helium_token_type_paren_curly_open,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 		
 		case '}': return (Helium_Token){
 			.type = helium_token_type_paren_curly_close,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 		
@@ -544,14 +544,14 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_plus_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_plus,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
@@ -562,14 +562,14 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_minus_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_minus,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
@@ -580,14 +580,14 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_percent_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_percent,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
@@ -598,7 +598,7 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_slash_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			} else if (ch == '/') {
@@ -623,14 +623,14 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				
 				return (Helium_Token){
 					.type = type,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = len },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = len },
 					.loc = MAKE_LOC(len),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_slash,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
@@ -641,21 +641,21 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_star_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_star,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
 		
 		case '~': return (Helium_Token){
 			.type = helium_token_type_bitwise_not,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 		
@@ -665,14 +665,14 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_bitwise_xor_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_bitwise_xor,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
@@ -683,14 +683,14 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_bitwise_and_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_bitwise_and,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
@@ -701,14 +701,14 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_bitwise_or_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_bitwise_or,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
@@ -719,7 +719,7 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_less_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			} else if (ch == '<') {
@@ -729,21 +729,21 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 					helium_lexer_eat(lexer);
 					return (Helium_Token){
 						.type = helium_token_type_bitwise_shift_left_equals,
-						.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 3 },
+						.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 3 },
 						.loc = MAKE_LOC(3),
 					};
 				}
 				
 				return (Helium_Token){
 					.type = helium_token_type_bitwise_shift_left,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_less,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
@@ -754,7 +754,7 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_greater_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			} else if (ch == '>') {
@@ -764,28 +764,28 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 					helium_lexer_eat(lexer);
 					return (Helium_Token){
 						.type = helium_token_type_bitwise_shift_right_equals,
-						.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 3 },
+						.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 3 },
 						.loc = MAKE_LOC(3),
 					};
 				}
 				
 				return (Helium_Token){
 					.type = helium_token_type_bitwise_shift_right,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_greater,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
 		
 		case ':': return (Helium_Token){
 			.type = helium_token_type_colon,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 		
@@ -795,14 +795,14 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_equals_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_equals,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
@@ -813,40 +813,40 @@ Helium_Token helium_lexer_next(Helium_Lexer *lexer) {
 				helium_lexer_eat(lexer);
 				return (Helium_Token){
 					.type = helium_token_type_not_equals,
-					.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 2 },
+					.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 2 },
 					.loc = MAKE_LOC(2),
 				};
 			}
 			
 			return (Helium_Token){
 				.type = helium_token_type_exclamation_mark,
-				.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+				.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 				.loc = MAKE_LOC(1),
 			};
 		}
 		
 		case '?': return (Helium_Token){
 			.type = helium_token_type_question_mark,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 		
 		case ',': return (Helium_Token){
 			.type = helium_token_type_comma,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 		
 		case ';': return (Helium_Token){
 			.type = helium_token_type_semi_colon,
-			.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+			.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 			.loc = MAKE_LOC(1),
 		};
 	}
 	
 	return (Helium_Token){
 		.type = helium_token_type_unkown,
-		.slice = (StrSlice){ .buf = lexer->input.buf + begin, .len = 1 },
+		.slice = (struct str_slice){ .buf = lexer->input.buf + begin, .len = 1 },
 		.loc = MAKE_LOC(1),
 	};
 	#undef MAKE_LOC

@@ -9,4 +9,5 @@ OUT_EXEC=$(DIR_BIN)/helium
 run:
 	@$(OUT_EXEC)
 build:
+	@mkdir -p $(DIR_BIN)
 	@$(CC) -o $(OUT_EXEC) $(ENTRY_FILE) $(DIR_INCLUDE:%=-I%) $(CFLAGS)
