@@ -75,6 +75,7 @@ enum : i32 {
 	helium_token_type_keyword_comptime,
 	helium_token_type_keyword_func,
 	helium_token_type_keyword_for,
+    helium_token_type_keyword_while,
 	helium_token_type_keyword_return,
 	helium_token_type_keyword_var,
 	helium_token_type_keyword_continue,
