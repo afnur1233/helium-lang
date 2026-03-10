@@ -3,10 +3,10 @@
 #include "str.c"
 
 typedef struct Helium_Loc {
-	struct str_slice file_path;
-	u64 line_num;
-	u64 line_begin;
-	u64 column;
-	u64 pos;
-	u64 len;
+    struct str_slice file_path;
+    u64 line_num;
+    u64 line_begin;
+    u64 column;
+    u64 pos;
+    u64 len;
 } Helium_Loc;

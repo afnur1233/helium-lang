@@ -8,8 +8,6 @@
     | "break"
     | "continue"
     | ";"
-	helium_token_type_keyword_if
-	helium_token_type_keyword_else
 
 <stmt-if> ::=
       "if" <expr> <stmt-block>
