@@ -65,6 +65,7 @@
     | "type"
     | "nothing"
     | <expr-typeof>
+    | <stmt-block>
 
 <type-enum> ::=
       "enum" "{" <enumarations-opt> "}"

@@ -44,5 +44,6 @@ int main() {
 			return -1;
 		}
 		tokens[token_count++] = lexing;
+        printf("%.*s\n", lexing.slice.len, lexing.slice.buf);
 	};
 }

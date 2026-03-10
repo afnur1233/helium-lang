@@ -67,17 +67,16 @@ enum : i32 {
 	helium_token_type_keyword_if,
 	helium_token_type_keyword_else,
 	helium_token_type_keyword_nothing,
-	helium_token_type_keyword_import,
 	helium_token_type_keyword_struct,
 	helium_token_type_keyword_type,
 	helium_token_type_keyword_typeof,
-	helium_token_type_keyword_cast,
 	helium_token_type_keyword_const,
+	helium_token_type_keyword_runtime,
 	helium_token_type_keyword_comptime,
 	helium_token_type_keyword_func,
 	helium_token_type_keyword_for,
 	helium_token_type_keyword_return,
-	helium_token_type_keyword_let,
+	helium_token_type_keyword_var,
 	helium_token_type_keyword_continue,
 	helium_token_type_keyword_break,
 	helium_token_type_keyword_union,
@@ -125,17 +124,17 @@ const Helium_Keyword helium_keywords[] = {
 	X("if", helium_token_type_keyword_if),
 	X("else", helium_token_type_keyword_else),
 	X("nothing", helium_token_type_keyword_nothing),
-	X("import", helium_token_type_keyword_import),
 	X("struct", helium_token_type_keyword_struct),
 	X("type", helium_token_type_keyword_type),
 	X("typeof", helium_token_type_keyword_typeof),
-	X("cast", helium_token_type_keyword_cast),
 	X("const", helium_token_type_keyword_const),
+	X("runtime", helium_token_type_keyword_runtime),
 	X("comptime", helium_token_type_keyword_comptime),
 	X("func", helium_token_type_keyword_func),
 	X("for", helium_token_type_keyword_for),
+	X("while", helium_token_type_keyword_while),
 	X("return", helium_token_type_keyword_return),
-	X("let", helium_token_type_keyword_let),
+	X("let", helium_token_type_keyword_var),
 	X("continue", helium_token_type_keyword_continue),
 	X("break", helium_token_type_keyword_break),
 	X("union", helium_token_type_keyword_union),
@@ -208,17 +207,17 @@ const char *helium_str_token_type(i32 type) {
 		case helium_token_type_keyword_if: return "keyword(if)";
 		case helium_token_type_keyword_else: return "keyword(else)";
 		case helium_token_type_keyword_nothing: return "keyword(nothing)";
-		case helium_token_type_keyword_import: return "keyword(import)";
 		case helium_token_type_keyword_struct: return "keyword(struct)";
 		case helium_token_type_keyword_type: return "keyword(type)";
 		case helium_token_type_keyword_typeof: return "keyword(typeof)";
-		case helium_token_type_keyword_cast: return "keyword(cast)";
 		case helium_token_type_keyword_const: return "keyword(const)";
 		case helium_token_type_keyword_comptime: return "keyword(comptime)";
+		case helium_token_type_keyword_runtime: return "keyword(runtime)";
 		case helium_token_type_keyword_func: return "keyword(func)";
 		case helium_token_type_keyword_for: return "keyword(for)";
+		case helium_token_type_keyword_while: return "keyword(while)";
 		case helium_token_type_keyword_return: return "keyword(return)";
-		case helium_token_type_keyword_let: return "keyword(let)";
+		case helium_token_type_keyword_var: return "keyword(let)";
 		case helium_token_type_keyword_continue: return "keyword(continue)";
 		case helium_token_type_keyword_break: return "keyword(break)";
 		case helium_token_type_keyword_union: return "keyword(union)";
