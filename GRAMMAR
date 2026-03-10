@@ -3,6 +3,7 @@
     | <stmt-variable>
     | <stmt-loop>
     | <stmt-if>
+    | <expr>
     | "return" <expr-tuple>
     | "break"
     | "continue"
