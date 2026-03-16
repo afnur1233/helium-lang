@@ -1,9 +1,10 @@
 CC=clang -std=c23
 CFLAGS=-w -lm
-DIR_INCLUDE=./include
+DIR_INCLUDE=./src
 DIR_BIN=./bin
 DIR_SRC=./src
-ENTRY_FILE=$(DIR_SRC)/main.c
+DIR_TESTS=./tests
+ENTRY_FILE=$(DIR_TESTS)/all.c
 OUT_EXEC=$(DIR_BIN)/helium
 
 run:
@@ -11,3 +12,7 @@ run:
 build:
 	@mkdir -p $(DIR_BIN)
 	@$(CC) -o $(OUT_EXEC) $(ENTRY_FILE) $(DIR_INCLUDE:%=-I%) $(CFLAGS)
+clean:
+	@mkdir -p $(DIR_BIN)
+	@rm -rf $(DIR_BIN)
+	@mkdir $(DIR_BIN)

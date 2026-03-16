@@ -1,0 +1,15 @@
+const io = import("io")
+
+const main = func() void {
+    io.println(
+        \\ Multi
+        \\ Line
+        \\ Strings
+        \\ !
+    )
+    
+    var John = {
+        name = "John Program",
+        age = 34 + 35,
+    }
+}

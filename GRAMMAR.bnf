@@ -1,5 +1,6 @@
 <stmt> ::=
-      <stmt-block>
+      <qualifers> <stmt>
+    | <stmt-block>
     | <stmt-variable>
     | <stmt-loop>
     | <stmt-if>
@@ -15,7 +16,7 @@
     | "if" <expr> <stmt-block> "else" <stmt-if>
 
 <stmt-loop> ::=
-      "for" <expr-opt>;<expr-opt>;<expr-opt> <stmt-block>
+      "for" <expr-opt>";"<expr-opt>";"<expr-opt> <stmt-block>
     | "for" <expr-opt> <stmt-block>
     | "for" <stmt-block>
 

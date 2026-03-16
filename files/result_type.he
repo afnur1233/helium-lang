@@ -1,0 +1,26 @@
+const io = import("io")
+
+const result = func(Success: type, Error: type) type {
+    return union(bool) {
+        success: Success,
+        error: Error,
+    }
+}
+
+const divide_err = enum(i32) {
+    divide_by_zero,
+}
+
+const divide = func(x: i32, y: i32) result(i32, divide_err) {
+    if y == 0 {
+        return result(i32, divide_err).error(divide_err.divide_by_zero)
+    }
+    
+    return result(i32, divide_err).success(x / y)
+}
+
+const main = func() {
+    io.println(divide(25, 5))
+    io.println(divide(7, 0))
+    io.println(divide(12, 2))
+}

@@ -1,0 +1,31 @@
+const component = union(i32) {
+	pub transform: struct {
+		pub x: f64
+		pub y: f64
+		pub z: f64
+	},
+	pub orientation: struct {
+		pub x: f64
+		pub y: f64
+		pub z: f64
+		pub w: f64
+	},
+	pub mesh_3d: struct {
+		pub data: array_list(triangle)
+	}
+}
+
+const main = func() {
+	assert(bool == u8)
+	assert(signed(bool) == i8)
+    assert(unsigned(i64) == u64)
+    assert(component.tag == i32)
+    assert(0..255 == u8)
+    assert(signed(0..255) == i8)
+    
+    const c = component.transform({
+        x = 1,
+        y = 5,
+        z = 1,
+    })
+}

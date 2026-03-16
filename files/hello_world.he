@@ -1,0 +1,5 @@
+const io = import("io")
+
+cosnt main = func() void {
+    io.println("Hello, World!")
+}
