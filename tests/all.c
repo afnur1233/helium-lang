@@ -57,14 +57,3 @@ int main(void) {
         );
     }
 }
-
-/*
-TranslationUnit
-|-VarDecl printf 'int(char*)'
-`-FunctionDecl main 'int()'
-  `-Compunt
-    |-Expr
-    | `-Expr
-    `-Return
-      `-Expr
-*/
