@@ -6,12 +6,16 @@ DIR_SRC=./src
 DIR_TESTS=./tests
 ENTRY_FILE=$(DIR_TESTS)/all.c
 OUT_EXEC=$(DIR_BIN)/helium
+OUT_ASM=$(DIR_BIN)/helium.asm
 
 run:
 	@$(OUT_EXEC)
 build:
 	@mkdir -p $(DIR_BIN)
 	@$(CC) -o $(OUT_EXEC) $(ENTRY_FILE) $(DIR_INCLUDE:%=-I%) $(CFLAGS)
+asm:
+	@mkdir -p $(DIR_BIN)
+	@$(CC) -o $(OUT_ASM) $(ENTRY_FILE) -S $(DIR_INCLUDE:%=-I%) $(CFLAGS)
 clean:
 	@mkdir -p $(DIR_BIN)
 	@rm -rf $(DIR_BIN)

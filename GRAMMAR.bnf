@@ -66,6 +66,7 @@
     | "nothing"
     | <expr-typeof>
     | <stmt-block>
+    | (<oper>)
 
 <type-enum> ::=
       "enum" "{" <enumarations-opt> "}"
@@ -112,7 +113,7 @@
 
 <expr-func-call> ::= <expr>"("<init-fields-opt>")"
 
-<expr-oper> ::=
+<oper> ::=
       "+"
     | "-"
     | "/"
@@ -134,7 +135,7 @@
     | ">="
     | ".."
 
-<expr-oper-call> ::= <expr-oper>"("<init-fields-opt>")"
+<expr-oper-call> ::= <expr> <oper> <expr>
 
 <expr-member> ::= <expr>"."<identifier>
 

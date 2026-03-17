@@ -15,6 +15,25 @@ const component = union(i32) {
 	}
 }
 
+const result = func(T_Ok: type, T_Err: type) {
+    return union(bool) {
+        ok: T_Ok,
+        err: T_Err
+        
+        pub const is_ok = func(self: *const Self) {
+            return self == Self.ok
+        }
+        
+        pub const is_err = func(self: *const Self) {
+            return self == Self.err
+        }
+        
+        pub const unwrap = func(self: *const Self) {
+            return self.ok
+        }
+    }
+}
+
 const main = func() {
 	assert(bool == u8)
 	assert(signed(bool) == i8)

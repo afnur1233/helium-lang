@@ -30,7 +30,7 @@ bool str_reserve(struct allocator *allocator, struct str *str, size_t new_cap) {
         str->buf = allocator->alloc(
             allocator,
             sizeof(*str->buf) * new_cap,
-            alignof(str->buf)
+            alignof(*str->buf)
         );
     } else if (str->cap < new_cap) {
         if (
@@ -39,7 +39,7 @@ bool str_reserve(struct allocator *allocator, struct str *str, size_t new_cap) {
             allocator->can_resize(
                 allocator,
                 str->buf,
-                alignof(str->buf),
+                alignof(*str->buf),
                 sizeof(*str->buf) * str->cap,
                 sizeof(*str->buf) * new_cap
             )
@@ -47,7 +47,7 @@ bool str_reserve(struct allocator *allocator, struct str *str, size_t new_cap) {
             str->buf = allocator->resize(
                 allocator,
                 str->buf,
-                alignof(str->buf),
+                alignof(*str->buf),
                 sizeof(*str->buf) * str->cap,
                 sizeof(*str->buf) * new_cap
             );
@@ -55,7 +55,7 @@ bool str_reserve(struct allocator *allocator, struct str *str, size_t new_cap) {
             str->buf = allocator->realloc(
                 allocator,
                 str->buf,
-                alignof(str->buf),
+                alignof(*str->buf),
                 sizeof(*str->buf) * str->cap,
                 sizeof(*str->buf) * new_cap
             );
@@ -110,7 +110,7 @@ void str_free(struct allocator *allocator, struct str *str) {
         allocator,
         str->buf,
         sizeof(*str->buf) * str->cap,
-        alignof(str->buf)
+        alignof(*str->buf)
     );
     str->cap = 0;
     str->len = 0;
