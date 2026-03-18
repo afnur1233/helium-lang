@@ -1,3 +1,6 @@
+white-space = ? white space characters ? , { ? white space characters ? } ;
+any = ? all visible characters ? ;
+
 letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
        | "H" | "I" | "J" | "K" | "L" | "M" | "N"
        | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
@@ -6,9 +9,6 @@ letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
        | "j" | "k" | "l" | "m" | "n" | "o" | "p"
        | "q" | "r" | "s" | "t" | "u" | "v" | "w"
        | "x" | "y" | "z" ;
-
-white-space = ? white space characters ? , { ? white space characters ? } ;
-any = ? all visible characters ? ;
 
 digit-base-2  = "0" | "1";
 digit-base-8  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
@@ -52,11 +52,18 @@ expression = expression-qualified
            | character-lit
            | string-lit
            | identifier
+           | expression-func
+           | expression-tuple
+           | expression , [ white-space ] , '(' , [ white-space ] , [ init-fields ] , [ white-space ] , ')'
+           | "use" , [ white-space ] , statement-block
            ;
 
-init-field = ;
+expression-tuple = '(' , [ white-space ] , [ expression , { [ white-space ] , ',' , [ white-space ] , expression } ] , [ white-space ] ,  ')' ;
 
-expression-init = expression , [ white-space ] , '{' , [ white-space ] , { init-field } , [ white-space ] , '}' ;
+init-field = [ expression , [ white-space ] , '=' , [ white-space ] ] , expression ;
+init-fields = init-field , { [ white-space ] , ',' , [ white-space ] , init-field } ;
+
+expression-init = expression , [ white-space ] , '{' , [ white-space ] , [ init-fields ] , [ white-space ] , '}' ;
 
 expression-qualified = qualifiers , [ white-space ] , expression ;
 
@@ -70,13 +77,37 @@ expression-prefix = (
                     expression
                     ;
 
-expression-binary =
-                  expression ,
-                  [ white-space ] ,
-                    "+"  | "-"  | "%" | "/" | "*"  | "^"  | "&"  | "|"
-                  | "<<" | ">>" | "<" | ">" | "<=" | ">=" | "==" | "!="
-                  | ".." | "."
-                  ,
-                  [ white-space ] ,
-                  expression
-                  ;
+expression-binary = expression ,
+                    [ white-space ] ,
+                      "+"  | "-"  | "%" | "/" | "*"  | "^"  | "&"  | "|"
+                    | "<<" | ">>" | "<" | ">" | "<=" | ">=" | "==" | "!="
+                    | ".." | "."
+                    ,
+                    [ white-space ] ,
+                    expression
+                    ;
+
+func-param = identifier , [ white-space ] , ":" , [ white-space ] , expression ,
+             [ [ white-space ] , "=" , [ white-space ] , expression ]
+             ;
+
+func-params = '(' , [ white-space ] , [ func-param , {"," , [ white-space ] , func-param } ]  , [ white-space ] , ')' ;
+
+expression-func = "func" , [ white-space ] , func-params , [ white-space ] , statement-block ;
+
+statement = statement-block
+          | qualifiers , white-space , expression , [ [ white-space ] , "=" , [ white-space ] , expression ]
+          | qualifier , [ white-space ] , statement
+          | expression
+          | "return"
+          | "break"
+          | "continue"
+          | "if" , [ white-space ] , expression , [ white-space ] , statement-block
+          | "for" , [ white-space ] ,
+            [ [ expression ] , [ white-space ] , ';' , [white-space] ] ,
+            [ expression ] ,
+            [ [white-space] , ';' , [ white-space ] , [ expression ] ] , [ white-space ] ,
+            statement-block
+          ;
+
+statement-block = '{' , { statement } , '}' ;

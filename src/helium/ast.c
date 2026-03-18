@@ -161,7 +161,7 @@ struct helium_ast_expr_array {
 };
 
 struct helium_ast_expr_init_field {
-    struct helium_ast_expr_ident *name;
+    union helium_ast_expr *name;
     union helium_ast_expr *value;
 };
 
@@ -292,7 +292,7 @@ struct helium_ast_stmt_block {
 struct helium_ast_stmt_variable {
     enum helium_ast_type ast_type;
     struct helium_qualifiers qualifiers;
-    struct helium_ast_expr_ident name;
+    union helium_ast_expr *name;
     union helium_ast_expr *type;
     union helium_ast_expr *default_value;
 };

@@ -84,6 +84,7 @@ enum helium_token_type : int {
     helium_token_type_keyword_break,
     helium_token_type_keyword_func,
     helium_token_type_keyword_pub,
+    helium_token_type_keyword_use,
 };
 
 struct helium_token {
@@ -126,7 +127,8 @@ struct helium_keyword helium_keywords[] = {
     X("continue", helium_token_type_keyword_continue),
     X("break", helium_token_type_keyword_break),
     X("func", helium_token_type_keyword_func),
-    X("pub", helium_token_type_keyword_pub)
+    X("pub", helium_token_type_keyword_pub),
+    X("use", helium_token_type_keyword_use),
 };
 #undef X
 
@@ -211,6 +213,7 @@ const char *helium_str_token_type(enum helium_token_type type) {
         case helium_token_type_keyword_break: return "keyword(break)";
         case helium_token_type_keyword_func: return "keyword(func)";
         case helium_token_type_keyword_pub: return "keyword(pub)";
+        case helium_token_type_keyword_use: return "keyword(use)";
     }
     return "";
 }
