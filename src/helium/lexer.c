@@ -76,6 +76,7 @@ enum helium_token_type : int {
     helium_token_type_keyword_const,
     helium_token_type_keyword_runtime,
     helium_token_type_keyword_comptime,
+    helium_token_type_keyword_static,
     helium_token_type_keyword_for,
     helium_token_type_keyword_while,
     helium_token_type_keyword_return,
@@ -118,6 +119,7 @@ struct helium_keyword helium_keywords[] = {
     X("const", helium_token_type_keyword_const),
     X("runtime", helium_token_type_keyword_runtime),
     X("comptime", helium_token_type_keyword_comptime),
+    X("static", helium_token_type_keyword_static),
     X("for", helium_token_type_keyword_for),
     X("while", helium_token_type_keyword_while),
     X("return", helium_token_type_keyword_return),
@@ -201,6 +203,7 @@ const char *helium_str_token_type(enum helium_token_type type) {
         case helium_token_type_keyword_const: return "keyword(const)";
         case helium_token_type_keyword_runtime: return "keyword(runtime)";
         case helium_token_type_keyword_comptime: return "keyword(comptime)";
+        case helium_token_type_keyword_static: return "keyword(static)";
         case helium_token_type_keyword_for: return "keyword(for)";
         case helium_token_type_keyword_while: return "keyword(while)";
         case helium_token_type_keyword_return: return "keyword(return)";

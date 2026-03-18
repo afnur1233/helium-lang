@@ -1,0 +1,82 @@
+letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+       | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+       | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+       | "V" | "W" | "X" | "Y" | "Z" | "a" | "b"
+       | "c" | "d" | "e" | "f" | "g" | "h" | "i"
+       | "j" | "k" | "l" | "m" | "n" | "o" | "p"
+       | "q" | "r" | "s" | "t" | "u" | "v" | "w"
+       | "x" | "y" | "z" ;
+
+white-space = ? white space characters ? , { ? white space characters ? } ;
+any = ? all visible characters ? ;
+
+digit-base-2  = "0" | "1";
+digit-base-8  = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
+digit-base-10 = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+digit-base-16 = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" 
+              | "A" | "B" | "C" | "D" | "E" | "F" | "a" | "b" | "c" | "d"
+              | "e" | "f" ;
+
+number-base-2  = "0b" | "0B", { digit-base-2  | "_" } ;
+number-base-8  = "0o" | "0O", { digit-base-8  | "_" } ;
+number-base-16 = "0x" | "0X", { digit-base-16 | "_" } ;
+number-base-10 = digit-base-10 , { digit-base-10 } , [ "." , digit-base-10 , { digit-base-10 } ] ;
+number         = number-base-2 | number-base-8 | number-base-10 | number-base-16 ;
+
+shebang = "#!" , { any - "\n" } ;
+
+comment = "//" , { any - "\n" } ;
+
+character-part = any - ( '"' | "\n" )
+               | "\x" , digit-base-16 , { digit-base-16 }
+               | "\\" , any
+               ;
+
+character-lit = "'" , character-part , "'" ;
+
+string-lit = '"' , { character-part } , '"' ;
+
+identifier = letter | "_" , { letter | "_" | digit-base-10 } ;
+
+qualifier = "const" | "var" | "comptime" | "runtime" | "static";
+qualifiers = qualifier , { [ white-space ] , qualifier } ;
+
+expression = expression-qualified
+           | expression-tuple
+           | expression-prefix
+           | expression-binary
+           | "true"
+           | "false"
+           | "nothing"
+           | number
+           | character-lit
+           | string-lit
+           | identifier
+           ;
+
+init-field = ;
+
+expression-init = expression , [ white-space ] , '{' , [ white-space ] , { init-field } , [ white-space ] , '}' ;
+
+expression-qualified = qualifiers , [ white-space ] , expression ;
+
+expression-tuple = '(' , [ white-space ] , expression , [ white-space ] , ')' ;
+
+expression-prefix = (
+                        "~" | "?" | "+" | "-" | "*" | "&" | "..." | "not" |
+                        '[' , [ white-space ] , [ expression ] , [ white-space ] , ']'
+                    ) ,
+                    [ white-space ] ,
+                    expression
+                    ;
+
+expression-binary =
+                  expression ,
+                  [ white-space ] ,
+                    "+"  | "-"  | "%" | "/" | "*"  | "^"  | "&"  | "|"
+                  | "<<" | ">>" | "<" | ">" | "<=" | ">=" | "==" | "!="
+                  | ".." | "."
+                  ,
+                  [ white-space ] ,
+                  expression
+                  ;
