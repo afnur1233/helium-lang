@@ -96,7 +96,7 @@ func-params = '(' , [ white-space ] , [ func-param , {"," , [ white-space ] , fu
 expression-func = "func" , [ white-space ] , func-params , [ white-space ] , statement-block ;
 
 statement = statement-block
-          | qualifiers , white-space , expression , [ [ white-space ] , "=" , [ white-space ] , expression ]
+          | qualifiers , white-space , expression , [ [ white-space ] , ':' , [ white-space ] , expression , [ white-space ] ] , [ [ white-space ] , "=" , [ white-space ] , expression ]
           | qualifier , [ white-space ] , statement
           | expression
           | "return"

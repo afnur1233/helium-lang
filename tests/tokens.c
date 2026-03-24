@@ -26,6 +26,8 @@ int main(void) {
     struct str source = {0};
     {
         FILE *file = fopen(path, "rb");
+        if (!file) return perror("Failed to read file"), 1;
+        
         bool success = read_entire_file(&allocator_libc, &source, file);
         fclose(file);
         
@@ -46,14 +48,17 @@ int main(void) {
         }
     };
     
-    while (helium_can_lex(lexer)) {
-        struct helium_token token = helium_lex(&lexer);
+    struct helium_tokens tokens = {0};
+    if (!helium_lex_all(&allocator_libc, &lexer, &tokens)) return false;
+    
+    for (size_t i = 0; i < tokens.len; i++) {
+        struct helium_token token = tokens.items[i];
         
         printf(
             "%26s \e[2m:\e[0m %.*s\n",
             helium_str_token_type(token.type),
-            token.data.len,
-            token.data.buf
+            token.slice.len,
+            token.slice.buf
         );
     }
 }

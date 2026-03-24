@@ -1,7 +1,8 @@
-#pragma once
+#ifndef _INCLUDE_UTF8_C
+#define _INCLUDE_UTF8_C
+
 #include <int.c>
 #include <str.c>
-#include <mem.c>
 #include <ctype.h>
 
 struct iterator_utf8 {
@@ -55,7 +56,10 @@ size_t iterator_utf8_get_next_len(struct iterator_utf8 *iterator) {
         return 0;
     }
     
-    char ch = str_slice_at(&iterator->slice, iterator->pos);
+    char ch = iterator->slice.buf[iterator->pos];
+    if (ch == '\0') {
+        return 0;
+    }
     
     if ((ch & 0b11100000) == 0b11000000) {
         return 2;
@@ -77,14 +81,18 @@ utf8_codepoint_t iterator_utf8_peek(struct iterator_utf8 *iterator) {
         return '\0';
     }
     
-    utf8_codepoint_t codepoint = str_slice_at(&iterator->slice, iterator->pos);
+    utf8_codepoint_t codepoint = iterator->slice.buf[iterator->pos];
     size_t len = iterator_utf8_get_next_len(iterator);
     
     codepoint &= 0xFF >> len;
     
     for (size_t i = 1; i < len; i++) {
+        if (iterator->pos + i > iterator->slice.len) {
+            return '\0';
+        }
+        
         codepoint <<= 6;
-        codepoint |= str_slice_at(&iterator->slice, iterator->pos + i) & 0b00111111;
+        codepoint |= iterator->slice.buf[iterator->pos + i] & 0b00111111;
     }
     
     return codepoint;
@@ -96,3 +104,5 @@ utf8_codepoint_t iterator_utf8_eat(struct iterator_utf8 *iterator) {
     
     return codepoint;
 }
+
+#endif // _INCLUDE_UTF8_C

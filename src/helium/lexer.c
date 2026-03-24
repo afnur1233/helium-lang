@@ -1,7 +1,10 @@
-#pragma once
+#ifndef _INCLUDE_HELIUM_LEXER_C
+#define _INCLUDE_HELIUM_LEXER_C
+
 #include <int.c>
 #include <str.c>
 #include <utf8.c>
+#include <da.c>
 #include <helium/loc.c>
 
 enum helium_token_type : int {
@@ -61,6 +64,8 @@ enum helium_token_type : int {
     helium_token_type_dot_dot_dot,
     helium_token_type_comma,
     helium_token_type_semi_colon,
+    helium_token_type_keyword_true,
+    helium_token_type_keyword_false,
     helium_token_type_keyword_nothing,
     helium_token_type_keyword_not,
     helium_token_type_keyword_and,
@@ -86,11 +91,18 @@ enum helium_token_type : int {
     helium_token_type_keyword_pub,
     helium_token_type_keyword_use,
 };
+#define HELIUM_TOKEN_TYPE_MAX helium_token_type_keyword_use
 
 struct helium_token {
     enum helium_token_type type;
     struct helium_loc loc;
-    struct str_slice data;
+    struct str_slice slice;
+};
+
+struct helium_tokens {
+    struct helium_token *items;
+    size_t len;
+    size_t cap;
 };
 
 struct helium_lexer {
@@ -105,6 +117,8 @@ struct helium_keyword {
 
 #define X(strlit, T) ((struct helium_keyword){ .type = T, .value = STR_SLICE_LIT(strlit) })
 struct helium_keyword helium_keywords[] = {
+    X("true", helium_token_type_keyword_true),
+    X("false", helium_token_type_keyword_false),
     X("not", helium_token_type_keyword_not),
     X("and", helium_token_type_keyword_and),
     X("or", helium_token_type_keyword_or),
@@ -190,6 +204,8 @@ const char *helium_str_token_type(enum helium_token_type type) {
         case helium_token_type_dot_dot_dot: return "dot_dot_dot";
         case helium_token_type_comma: return "comma";
         case helium_token_type_semi_colon: return "semi_colon";
+        case helium_token_type_keyword_true: return "keyword(true)";
+        case helium_token_type_keyword_false: return "keyword(false)";
         case helium_token_type_keyword_not: return "keyword(not)";
         case helium_token_type_keyword_and: return "keyword(and)";
         case helium_token_type_keyword_or: return "keyword(or)";
@@ -362,7 +378,7 @@ struct helium_token helium_lex(struct helium_lexer *lexer) {
             }
             
             struct str_slice slice = { .buf = lexer->iterator.slice.buf + old_loc.pos, .len = MAKE_LEN() };
-            for (size_t i = 0; i < arr_sizeof(helium_keywords); i++) {
+            for (size_t i = 0; i < sizeof(helium_keywords)/sizeof(helium_keywords[0]); i++) {
                 if (!str_slice_eq(&slice, &helium_keywords[i].value)) continue;
                 type = helium_keywords[i].type;
                 
@@ -559,11 +575,12 @@ struct helium_token helium_lex(struct helium_lexer *lexer) {
             }
         } break;
         case ',': type = helium_token_type_comma; break;
+        case ';': type = helium_token_type_semi_colon; break;
     }
     
     return (struct helium_token){
         .type = type,
-        .data = (struct str_slice){
+        .slice = (struct str_slice){
             .buf = lexer->iterator.slice.buf + old_loc.pos,
             .len = MAKE_LEN()
         },
@@ -572,3 +589,25 @@ struct helium_token helium_lex(struct helium_lexer *lexer) {
     #undef MAKE_LOC
     #undef MAKE_LEN
 }
+
+bool helium_lex_all(struct allocator *allocator, struct helium_lexer *lexer, struct helium_tokens *tokens) {
+    for (;;) {
+        struct helium_token token = helium_lex(lexer);
+        
+        if (
+            token.type != helium_token_type_shebang &&
+            token.type != helium_token_type_comment
+        ) {
+            if (!da_push(allocator, tokens, token))
+                return false;
+        }
+        
+        if (token.type == helium_token_type_end) {
+            break;
+        }
+    }
+    
+    return true;
+}
+
+#endif // _INCLUDE_HELIUM_LEXER_C

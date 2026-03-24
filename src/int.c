@@ -1,4 +1,7 @@
-#pragma once
+#ifndef _INCLUDE_INT_C
+#define _INCLUDE_INT_C
+
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <math.h>
@@ -14,3 +17,5 @@ typedef uint64_t u64;
 typedef _Float16 f16;
 typedef _Float32 f32;
 typedef _Float64 f64;
+
+#endif // _INCLUDE_INT_C

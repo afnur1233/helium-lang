@@ -1,4 +1,7 @@
-#pragma once
+#ifndef _INCLUDE_STR_C
+#define _INCLUDE_STR_C
+
+#include <int.c>
 #include <mem.c>
 
 struct str {
@@ -27,39 +30,14 @@ bool str_reserve(struct allocator *allocator, struct str *str, size_t new_cap) {
     }
     
     if (str->buf == NULL) {
-        str->buf = allocator->alloc(
-            allocator,
-            sizeof(*str->buf) * new_cap,
-            alignof(*str->buf)
-        );
+        str->buf = allocator->alloc(allocator, sizeof(*str->buf) * new_cap);
     } else if (str->cap < new_cap) {
-        if (
-            allocator->can_resize != NULL &&
-            allocator->resize != NULL &&
-            allocator->can_resize(
-                allocator,
-                str->buf,
-                alignof(*str->buf),
-                sizeof(*str->buf) * str->cap,
-                sizeof(*str->buf) * new_cap
-            )
-        ) {
-            str->buf = allocator->resize(
-                allocator,
-                str->buf,
-                alignof(*str->buf),
-                sizeof(*str->buf) * str->cap,
-                sizeof(*str->buf) * new_cap
-            );
-        } else {
-            str->buf = allocator->realloc(
-                allocator,
-                str->buf,
-                alignof(*str->buf),
-                sizeof(*str->buf) * str->cap,
-                sizeof(*str->buf) * new_cap
-            );
-        }
+        str->buf = allocator->realloc(
+            allocator,
+            str->buf,
+            sizeof(*str->buf) * str->cap,
+            sizeof(*str->buf) * new_cap
+        );
     }
     
     if (str->buf == NULL) {
@@ -106,42 +84,9 @@ void str_free(struct allocator *allocator, struct str *str) {
         allocator->free == NULL
     ) return;
     
-    str->buf = allocator->free(
-        allocator,
-        str->buf,
-        sizeof(*str->buf) * str->cap,
-        alignof(*str->buf)
-    );
+    str->buf = allocator->free(allocator, str->buf, sizeof(*str->buf) * str->cap);
     str->cap = 0;
     str->len = 0;
-}
-
-char str_at(struct str *str, size_t i) {
-    if (i >= str->len) {
-        return '\0';
-    }
-    return str->buf[i];
-}
-
-char str_slice_at(struct str_slice *slice, size_t i) {
-    if (i >= slice->len) {
-        return '\0';
-    }
-    return slice->buf[i];
-}
-
-char str_set(struct str *str, size_t i, char ch) {
-    if (i >= str->len) {
-        return '\0';
-    }
-    return str->buf[i] = ch;
-}
-
-char str_slice_set(struct str_slice *slice, size_t i, char ch) {
-    if (i >= slice->len) {
-        return '\0';
-    }
-    return slice->buf[i] = ch;
 }
 
 bool str_slice_eq(struct str_slice *a, struct str_slice *b) {
@@ -157,3 +102,5 @@ bool str_slice_eq(struct str_slice *a, struct str_slice *b) {
     
     return true;
 }
+
+#endif // _INCLUDE_STR_C
